@@ -1,0 +1,130 @@
+/* ===== 대시보드 그리드 ===== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+/* ===== 대시보드 카드 ===== */
+.dashboard-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dashboard-card-title {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.dashboard-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.dashboard-card-change {
+    font-size: 13px;
+    color: var(--primary);
+}
+
+/* ===== 카드 공통 ===== */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+/* ===== 테이블 ===== */
+.table-wrap {
+    overflow-x: auto;
+}
+
+.table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-wrap th,
+.table-wrap td {
+    padding: 12px 10px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+.table-wrap th {
+    background: var(--bg-light);
+    font-weight: 600;
+}
+
+/* ===== 채팅 리스트 (대시보드 요약) ===== */
+.dashboard-chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-item {
+    display: block;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: var(--bg-light);
+    text-decoration: none;
+    color: inherit;
+}
+
+.chat-item:hover {
+    background: var(--bg);
+}
+
+.chat-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.chat-user {
+    font-weight: 600;
+}
+
+.chat-time {
+    color: var(--text-muted);
+}
+
+.chat-preview {
+    font-size: 14px;
+    color: var(--text);
+}
+
+/* ===== 여백 유틸 ===== */
+.mb-2 {
+    margin-bottom: 24px;
+}
+
+/* ===== 반응형 (옵션) ===== */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}

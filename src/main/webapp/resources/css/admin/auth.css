@@ -1,0 +1,35 @@
+/*
+    관리자 인증(auth) 전용 스타일
+    - 로그인
+    - 추후 비밀번호 변경, 2차 인증 등 확장
+*/
+
+.admin-login-wrap {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-login-box {
+    width: 100%;
+    max-width: 420px;
+    padding: 40px;
+}
+
+.admin-login-box .card-title {
+    text-align: center;
+}
+
+.admin-login-box .subtitle {
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* 버튼 full width */
+.btn-block {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+}

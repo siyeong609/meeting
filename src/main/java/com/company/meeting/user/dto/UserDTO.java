@@ -1,8 +1,11 @@
 package com.company.meeting.user.dto;
 
+import java.time.LocalDateTime;
+
 /**
- * 사용자 데이터 전송 객체
- * - DB ↔ Java 데이터 매핑용
+ * user 테이블 매핑 DTO
+ * - DB row ↔ Java 객체 변환 전용
+ * - 비즈니스 로직 없음
  */
 public class UserDTO {
 
@@ -11,6 +14,9 @@ public class UserDTO {
     private String password;
     private String name;
     private String role;
+    private LocalDateTime createdAt;
+
+    // ===== Getter / Setter =====
 
     public int getId() {
         return id;
@@ -50,5 +56,13 @@ public class UserDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

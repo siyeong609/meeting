@@ -1,0 +1,71 @@
+/*
+    index 전용 스타일
+    - 관리자 / 사용자 선택 화면
+*/
+
+/* 전체 화면 중앙 정렬 */
+.index-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg);
+}
+
+/* 카드 박스 */
+.index-box {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 40px 32px;
+    text-align: center;
+}
+
+/* 타이틀 */
+.index-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    color: var(--text);
+}
+
+/* 링크 영역 */
+.index-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 공통 버튼 */
+.index-link {
+    display: block;
+    padding: 18px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text);
+    background: #f8fafc;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+/* hover 효과 */
+.index-link:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+}
+
+/* 관리자 */
+.index-link.admin {
+    border-left: 6px solid #2563eb;
+}
+
+/* 사용자 */
+.index-link.user {
+    border-left: 6px solid #14b8a6;
+}
