@@ -1,4 +1,8 @@
 /* 공통 스타일 - 회의실 예약 시스템 */
+
+/* ✅ Google Fonts: Noto Sans KR (전역 기본 폰트) */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
 :root {
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
@@ -13,6 +17,16 @@
   --radius: 12px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* ✅ 전역 폰트 스택 */
+  --font-sans: "Noto Sans KR",
+               system-ui,
+               -apple-system,
+               "Segoe UI",
+               "Apple SD Gothic Neo",
+               "Malgun Gothic",
+               Arial,
+               sans-serif;
 }
 
 * {
@@ -22,11 +36,20 @@
 }
 
 body {
-  font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+  /* ✅ 폰트 변경 */
+  font-family: var(--font-sans);
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
+}
+
+/* ✅ 폼/버튼도 동일 폰트 적용(브라우저 기본 폰트 방지) */
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-sans);
 }
 
 a {

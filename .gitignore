@@ -37,3 +37,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# user upload files
+src/main/webapp/resources/uploads/
+src/main/webapp/resources/images/user/profile/

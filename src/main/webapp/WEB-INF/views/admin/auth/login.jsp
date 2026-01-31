@@ -41,8 +41,7 @@
                autocomplete="current-password">
       </div>
 
-      <button type="submit"
-              class="btn btn-primary btn-block">
+      <button type="submit" class="btn btn-primary btn-block">
         로그인
       </button>
     </form>
@@ -69,7 +68,7 @@
         return;
       }
 
-      // 서버 로그인 요청 (검증 완료된 방식)
+      // 서버 로그인 요청
       fetch(
         '${pageContext.request.contextPath}/admin/auth/login',
         {
@@ -77,35 +76,41 @@
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
+          // 같은 도메인이라 기본적으로 쿠키가 붙지만,
+          // 명시해두면 나중에 설정 바뀌어도 안전함
+          credentials: 'same-origin',
           body:
             'userId=' + encodeURIComponent(userId) +
             '&password=' + encodeURIComponent(password)
         }
       )
       .then(function (res) {
-        if (!res.ok) {
-          throw new Error('서버 응답 오류');
-        }
-        return res.json();
+        return res.json().then(function (json) {
+          // status는 실패여도 body는 내려올 수 있으니 같이 반환
+          return { res: res, json: json };
+        });
       })
-      .then(function (json) {
+      .then(function (pack) {
+        const res = pack.res;
+        const json = pack.json;
 
-        if (json.success) {
+        // ✅ ApiResponse 포맷(ok) + 이전 포맷(success) 둘 다 호환
+        const isOk = (json && (json.ok === true || json.success === true));
+
+        if (res.ok && isOk) {
           showModal('로그인 성공', 'success');
 
-          // 모달 보여준 뒤 이동
           setTimeout(function () {
             window.location.href =
               '${pageContext.request.contextPath}/admin/dashboard';
-          }, 500);
+          }, 300);
 
           return;
         }
 
-        showModal(
-          json.message || '아이디 또는 비밀번호가 올바르지 않습니다.',
-          'error'
-        );
+        // 실패 메시지
+        const msg = (json && (json.message || json.msg)) || '아이디 또는 비밀번호가 올바르지 않습니다.';
+        showModal(msg, 'error');
       })
       .catch(function () {
         showModal('로그인 처리 중 오류가 발생했습니다.', 'error');

@@ -13,8 +13,13 @@ public class UserDTO {
     private String loginId;
     private String password;
     private String name;
+    private String email;
+    private String profileImage;
     private String role;
+    private String memo;
+
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // ===== Getter / Setter =====
 
@@ -50,6 +55,22 @@ public class UserDTO {
         this.name = name;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
     public String getRole() {
         return role;
     }
@@ -64,5 +85,24 @@ public class UserDTO {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    /**
+     * 관리자 메모(Nullable)
+     */
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
     }
 }

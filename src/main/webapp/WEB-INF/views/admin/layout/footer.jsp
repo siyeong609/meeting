@@ -1,10 +1,10 @@
-</main>
+<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page pageEncoding="UTF-8" %>
+<%
+  String ctx = request.getContextPath();
+%>
 
-<footer class="admin-footer">
-    <p class="text-muted text-center">
-        © Meeting Room System
-    </p>
-</footer>
-
+<!-- 공통 JS -->
+<script src="<%= ctx %>/resources/js/common.js"></script>
 </body>
 </html>
