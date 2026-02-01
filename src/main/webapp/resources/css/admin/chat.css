@@ -1,0 +1,103 @@
+/* =========================
+ * 관리자 대화관리(chat) 페이지 전용 스타일
+ * - room.css 패턴과 유사한 UI를 유지
+ * ========================= */
+
+.chat-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-toolbar-right {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.chat-search-input {
+  flex: 1;
+  min-width: 260px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.chat-status,
+.chat-page-size {
+  padding: 10px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.chat-search-btn {
+  padding: 10px 14px;
+}
+
+/* 상태 배지 */
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.badge-open {
+  background: #eaf7ee;
+  color: #1e7a3b;
+}
+
+.badge-closed {
+  background: #feeceb;
+  color: #b42318;
+}
+
+/* 버튼 크기 조절(프로젝트 btn 시스템이 있으면 자연스럽게 덮이지 않게 최소만) */
+.btn-sm {
+  padding: 8px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+/* 페이징 */
+.pg {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 14px 8px;
+}
+
+.pg-btn {
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pg-btn.active {
+  font-weight: 700;
+  border-color: #111827;
+}
+
+.pg-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ✅ 테이블 셀: 1줄 + 넘치면 ... */
+.td-ellipsis {
+  max-width: 520px;        /* 원하는 폭으로 조절 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

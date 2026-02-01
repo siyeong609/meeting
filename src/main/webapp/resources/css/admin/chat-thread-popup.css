@@ -1,0 +1,116 @@
+/* =========================
+ * 관리자 채팅 팝업 전용 스타일
+ * - "헤더/메뉴 없이 채팅만" 목적
+ * ========================= */
+
+.chat-popup-body {
+  margin: 0;
+  background: #f6f7fb;
+}
+
+.chat-popup {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-popup-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 14px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.chat-popup-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.chat-popup-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.chat-popup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 메시지 리스트 */
+.chat-popup-messages {
+  flex: 1;
+  overflow: auto;
+  padding: 14px;
+}
+
+.chat-empty {
+  padding: 12px;
+  background: #fff;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+}
+
+/* 입력 영역 */
+.chat-popup-input {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-input {
+  flex: 1;
+  resize: none;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+}
+
+/* =========================
+ * 말풍선 스타일 (ADMIN 오른쪽 / USER 왼쪽)
+ * ========================= */
+
+.msg {
+  display: flex;
+  margin: 8px 0;
+}
+
+.msg-left {
+  justify-content: flex-start;
+}
+
+.msg-right {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.msg-right .bubble {
+  background: #eef4ff;
+  border-color: #d8e6ff;
+}
+
+.bubble-content {
+  white-space: pre-wrap; /* 줄바꿈 유지 */
+  word-break: break-word;
+  font-size: 14px;
+}
+
+.bubble-meta {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: right;
+}

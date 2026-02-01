@@ -236,3 +236,5 @@ CREATE TABLE IF NOT EXISTS chat_message (
     FOREIGN KEY (thread_id) REFERENCES chat_thread(id)
     ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE INDEX idx_chat_message_thread_id_id
+    ON chat_message(thread_id, id);
