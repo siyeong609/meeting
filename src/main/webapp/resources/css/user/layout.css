@@ -1,0 +1,239 @@
+/* ===== 전체 레이아웃 ===== */
+body {
+    background: var(--bg);
+}
+
+/* ===== 헤더 ===== */
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #ffffff;
+
+    box-shadow: var(--shadow);
+}
+
+.user-header h1 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.user-header .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+}
+
+/* ===== 네비게이션 ===== */
+.user-nav {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+}
+
+.user-nav ul {
+    display: flex;
+    gap: 8px;
+    padding: 0 24px;
+    margin: 0;
+    list-style: none;
+}
+
+.user-nav li {
+    margin: 0;
+}
+
+.user-nav a {
+    display: block;
+    padding: 14px 16px;
+
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.user-nav a:hover {
+    color: var(--primary);
+}
+
+.user-nav a.active {
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom-color: var(--primary);
+}
+
+/* ===== 메인 컨텐츠 ===== */
+.user-container {
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ===== 섹션 타이틀 ===== */
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+/* ===== 버튼 보조 ===== */
+.btn-outline {
+    background: transparent;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ===== 유틸 ===== */
+.mt-1 {
+    margin-top: 4px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+/* ===== 계정 드롭다운(프로필 + 아이디) ===== */
+.user-account {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 프로필 이미지 */
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    object-fit: cover;
+
+    /* ✅ 배경이 진한 헤더에서도 선명하게 보이도록 */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 아이디(트리거 버튼) */
+.user-account-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 10px;
+    border-radius: 10px;
+
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.10);
+
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+
+.user-account-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.user-caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid rgba(255, 255, 255, 0.9);
+}
+
+/* 드롭다운 메뉴 */
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+
+    width: 190px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+
+    padding: 6px;
+    display: none;
+    z-index: 50;
+}
+
+/* JS에서 open 클래스 토글 */
+.user-dropdown.open {
+    display: block;
+}
+
+/* 메뉴 아이템 */
+.user-dropdown a {
+    display: flex;
+    align-items: center;
+
+    padding: 10px 10px;
+    border-radius: 10px;
+
+    font-size: 14px;
+    color: #111827;
+    text-decoration: none;
+
+    transition: background 0.15s ease;
+}
+
+.user-dropdown a:hover {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+/* 구분선 */
+.user-dropdown .divider {
+    height: 1px;
+    margin: 6px 6px;
+    background: var(--border);
+}
+
+/* 로그아웃 강조 */
+.user-dropdown a.logout {
+    color: #b91c1c;
+}
+
+.user-dropdown a.logout:hover {
+    background: rgba(185, 28, 28, 0.08);
+}
+
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+    .user-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .user-nav ul {
+        flex-wrap: wrap;
+    }
+
+    .user-container {
+        padding: 20px;
+    }
+}

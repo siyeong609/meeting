@@ -201,3 +201,38 @@ CREATE TABLE IF NOT EXISTS `reservation` (
 CREATE INDEX idx_reservation_room_time ON `reservation` (room_id, start_time, end_time);
 CREATE INDEX idx_reservation_user_time ON `reservation` (user_id, start_time, end_time);
 CREATE INDEX idx_reservation_status_time ON `reservation` (status, start_time);
+
+-- =========================
+-- 1:1 채팅(문의) - MVP
+-- =========================
+
+CREATE TABLE IF NOT EXISTS chat_thread (
+                                           id INT AUTO_INCREMENT PRIMARY KEY,
+                                           user_id INT NOT NULL,
+                                           status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+    last_message_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    -- ✅ 회원당 1개 문의 스레드(정책)
+    UNIQUE KEY uq_chat_thread_user_id (user_id),
+
+    INDEX idx_chat_thread_updated_at (updated_at),
+    INDEX idx_chat_thread_last_message_at (last_message_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS chat_message (
+                                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                            thread_id INT NOT NULL,
+                                            sender_role VARCHAR(10) NOT NULL,  -- 'USER' | 'ADMIN'
+    sender_id INT NULL,               -- USER면 user_id, ADMIN이면 admin user id
+    content TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_chat_message_thread_id (thread_id),
+    INDEX idx_chat_message_created_at (created_at),
+
+    CONSTRAINT fk_chat_message_thread
+    FOREIGN KEY (thread_id) REFERENCES chat_thread(id)
+    ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

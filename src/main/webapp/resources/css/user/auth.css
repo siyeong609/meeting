@@ -1,0 +1,35 @@
+/*
+    회원 인증(auth) 전용 스타일
+    - 로그인
+    - 추후 회원가입/비밀번호 변경 등 확장
+*/
+
+.user-login-wrap {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-login-box {
+    width: 100%;
+    max-width: 420px;
+    padding: 40px;
+}
+
+.user-login-box .card-title {
+    text-align: center;
+}
+
+.user-login-box .subtitle {
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* 버튼 full width */
+.btn-block {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+}

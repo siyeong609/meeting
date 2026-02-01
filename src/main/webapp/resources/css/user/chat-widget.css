@@ -1,0 +1,165 @@
+/*
+  user/chat-widget.css
+  - 카카오톡 느낌(연파랑 배경 + 좌/우 말풍선)
+  - 우측 하단 플로팅 위젯
+*/
+
+.chat-widget {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+
+  width: 360px;
+  height: 520px;
+
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+
+  display: none;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.chat-widget.open {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 */
+.chat-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #fff;
+}
+
+.chat-widget__title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.chat-widget__close {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* 바디(채팅 영역) */
+.chat-widget__body {
+  flex: 1;
+  background: #b9cbe1; /* ✅ 예시 이미지 느낌 */
+  padding: 12px;
+  overflow-y: auto;
+}
+
+/* 입력 영역 */
+.chat-widget__input {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+
+.chat-widget__textarea {
+  flex: 1;
+  min-height: 42px;
+  max-height: 90px;
+  resize: none;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-widget__send {
+  width: 72px;
+  border-radius: 10px;
+}
+
+/* 메시지 한 줄 */
+.chat-msg {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+  align-items: flex-start;
+}
+
+/* 왼쪽(관리자) */
+.chat-msg.left {
+  justify-content: flex-start;
+}
+
+/* 오른쪽(나) */
+.chat-msg.right {
+  justify-content: flex-end;
+}
+
+/* 아바타(왼쪽만 사용) */
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.7);
+}
+
+/* 이름(아이디) 라벨 */
+.chat-meta {
+  font-size: 12px;
+  color: rgba(0,0,0,0.75);
+  margin-bottom: 4px;
+}
+
+/* 말풍선 */
+.chat-bubble {
+  display: inline-block;
+  max-width: 240px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* 왼쪽 말풍선(흰색) */
+.chat-msg.left .chat-bubble {
+  background: #ffffff;
+}
+
+/* 오른쪽 말풍선(노랑) */
+.chat-msg.right .chat-bubble {
+  background: #ffe54d; /* ✅ 카톡 느낌 */
+}
+
+/* 시간 */
+.chat-time {
+  margin-top: 3px;
+  font-size: 11px;
+  color: rgba(0,0,0,0.6);
+}
+
+/* 오른쪽은 메타/시간도 우측 정렬 */
+.chat-msg.right .chat-meta,
+.chat-msg.right .chat-time {
+  text-align: right;
+}
+
+/* 작은 화면 대응 */
+@media (max-width: 420px) {
+  .chat-widget {
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+}
