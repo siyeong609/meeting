@@ -1,0 +1,261 @@
+/**
+ * room.css
+ * - 회의실관리 페이지 전용
+ * - member.css와 동일한 UI 톤/구조 유지
+ */
+
+/* 검색 영역 */
+.room-search {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+
+  /* ✅ PC에서는 한 줄 유지 */
+  flex-wrap: nowrap;
+}
+
+.room-search .room-search-input {
+  flex: 1 1 auto;
+  min-width: 280px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+}
+
+/* ✅ (페이징 드롭다운) 래퍼: 괄호 표현 */
+.page-size-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.room-search .room-page-size {
+  width: 110px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.room-search .room-search-btn {
+  min-width: 90px;
+  white-space: nowrap;
+}
+
+/* ✅ 상단 툴바(회의실 생성/삭제 버튼) */
+.room-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.room-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-toolbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* 페이징 */
+.pagination {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.pagination-btn.active {
+  font-weight: 700;
+  border-color: #333;
+}
+
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-dots {
+  padding: 0 6px;
+  color: #666;
+}
+
+/* ===== 상세 팝업(기존 코드 호환) ===== */
+.modal-detail .modal-body {
+  padding: 16px;
+}
+
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.detail-section-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* 회의실 이미지/도면/사진이 있을 때를 대비한 프리뷰 섹션(옵션) */
+.room-image-section {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.room-image-preview {
+  width: 160px;
+  height: 120px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f7f7f7;
+  flex: 0 0 auto;
+}
+
+.room-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* =========================================================
+ * ✅ 모달 반응형/높이 제어 + 위치 중앙 고정(오른쪽 아래 붙는 현상 방지)
+ * ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+
+  /* ✅ 중앙 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 화면 가장자리 여백 */
+  padding: 16px;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ✅ common.css의 modal 위치(bottom/right 등) override */
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+
+  /* 반응형 폭 */
+  width: min(860px, 94vw);
+
+  /* 화면 높이 기준 제한 */
+  max-height: 90vh;
+
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+
+  display: flex;
+  flex-direction: column;
+
+  /* ✅ 위치 강제 중앙(flex 안에서) */
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+/* 상세/생성은 더 넓게 */
+.modal.modal-detail {
+  width: min(920px, 94vw);
+}
+
+/* 헤더/푸터 고정, 바디만 스크롤 */
+.modal-header {
+  flex: 0 0 auto;
+}
+
+.modal-body {
+  flex: 1 1 auto;
+  overflow: auto;
+
+  /* 헤더/푸터 고려 */
+  max-height: calc(90vh - 140px);
+}
+
+.modal-footer {
+  flex: 0 0 auto;
+}
+
+/* =========================================================
+ * ✅ 반응형 (모바일)
+ * ========================================================= */
+@media (max-width: 520px) {
+  .room-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .room-toolbar-right {
+    justify-content: flex-end;
+  }
+
+  /* ✅ 모바일에서는 줄바꿈 허용 */
+  .room-search {
+    flex-wrap: wrap;
+  }
+
+  .room-search .room-search-input {
+    min-width: 180px;
+  }
+
+  .modal,
+  .modal.modal-detail {
+    width: 94vw;
+    max-height: 92vh;
+  }
+
+  .modal-body {
+    max-height: calc(92vh - 140px);
+  }
+
+  .room-image-section {
+    flex-direction: column;
+  }
+
+  .room-image-preview {
+    width: 140px;
+    height: 110px;
+  }
+}
