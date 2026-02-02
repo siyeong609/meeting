@@ -6,6 +6,11 @@
 -- - 회의실 운영 설정(요일별 운영시간/특정일 예외)까지 포함
 -- - slot(예약 단위)은 기본 60분이지만, 추후 변경 가능성을 위해 DB에서 60 고정 CHECK는 걸지 않음
 -- - buffer(버퍼)는 드롭다운 고정값(0/10/30/60)이라 DB에서도 CHECK로 제한
+--
+-- 주의:
+-- - 아래 스키마는 MySQL 8 기준 CHECK 제약이 "실제로" 적용되는 전제
+-- - 인덱스 중복 생성(duplicate key) 방지를 위해 reservation의 CREATE INDEX 3줄 제거함
+-- =========================================
 
 -- DB 생성
 CREATE DATABASE IF NOT EXISTS meeting_room
@@ -67,8 +72,7 @@ CREATE TABLE IF NOT EXISTS `room` (
     booking_open_days_ahead INT NOT NULL DEFAULT 30 COMMENT '며칠 앞까지 예약 가능',
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     UNIQUE KEY uk_room_name (name),
 
@@ -77,7 +81,9 @@ CREATE TABLE IF NOT EXISTS `room` (
     CONSTRAINT ck_room_buffer_minutes CHECK (buffer_minutes IN (0, 10, 30, 60)),
     CONSTRAINT ck_room_booking_open_days CHECK (booking_open_days_ahead >= 1),
     CONSTRAINT ck_room_available_range CHECK (
-                                                 available_start_date IS NULL OR available_end_date IS NULL OR available_start_date <= available_end_date
+                                                 available_start_date IS NULL
+                                                 OR available_end_date IS NULL
+                                                 OR available_start_date <= available_end_date
                                              ),
     CONSTRAINT ck_room_minmax CHECK (
                                         min_minutes >= 1 AND max_minutes >= min_minutes
@@ -103,16 +109,15 @@ CREATE TABLE IF NOT EXISTS `room_operating_hours` (
     close_time TIME NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     UNIQUE KEY uk_room_dow (room_id, dow),
     KEY idx_room_hours_room (room_id),
 
     CONSTRAINT fk_room_hours_room
     FOREIGN KEY (room_id) REFERENCES `room`(id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
+                                                           ON DELETE CASCADE
+                                                           ON UPDATE CASCADE,
 
     CONSTRAINT ck_room_hours_dow CHECK (dow BETWEEN 1 AND 7),
 
@@ -143,16 +148,15 @@ CREATE TABLE IF NOT EXISTS `room_operating_exceptions` (
     reason VARCHAR(200) NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     UNIQUE KEY uk_room_exception_date (room_id, exception_date),
     KEY idx_room_exception (room_id, exception_date),
 
     CONSTRAINT fk_room_ex_room
     FOREIGN KEY (room_id) REFERENCES `room`(id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
+                                                           ON DELETE CASCADE
+                                                           ON UPDATE CASCADE,
 
     CONSTRAINT ck_room_ex_closed_rule CHECK (
 (is_closed = 1 AND open_time IS NULL AND close_time IS NULL)
@@ -167,48 +171,55 @@ CREATE TABLE IF NOT EXISTS `room_operating_exceptions` (
 -- TABLE: reservation
 -- =========================================
 -- 예약 테이블(기능 구현 전이라도 스키마는 미리 확정)
-CREATE TABLE `reservation` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NOT NULL,
-  `room_id` INT NOT NULL,
-  `title` VARCHAR(200) NULL DEFAULT NULL COMMENT '예약 제목/목적(선택)' COLLATE 'utf8mb4_unicode_ci',
-  `status` ENUM('BOOKED','CANCELED') NOT NULL DEFAULT 'BOOKED' COMMENT '예약 상태' COLLATE 'utf8mb4_unicode_ci',
-  `start_time` DATETIME NOT NULL,
-  `end_time` DATETIME NOT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP) ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_reservation_room_time` (`room_id`, `start_time`, `end_time`) USING BTREE,
-  INDEX `idx_reservation_user_time` (`user_id`, `start_time`, `end_time`) USING BTREE,
-  INDEX `idx_reservation_status_time` (`status`, `start_time`) USING BTREE,
-  CONSTRAINT `fk_reservation_room`
-    FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE,
-  CONSTRAINT `fk_reservation_user`
-    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-    ON UPDATE CASCADE
-    ON DELETE NO ACTION,
-  CONSTRAINT `chk_reservation_time` CHECK ((`start_time` < `end_time`))
-)
-COLLATE='utf8mb4_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=6;
+-- 주의:
+-- - 아래 CREATE TABLE 안에 인덱스 정의가 이미 있으므로, 별도의 CREATE INDEX를 또 실행하면 중복 오류 발생
+CREATE TABLE IF NOT EXISTS `reservation` (
+                                             `id` INT NOT NULL AUTO_INCREMENT,
+                                             `user_id` INT NOT NULL,
+                                             `room_id` INT NOT NULL,
 
--- ✅ 조회/충돌 체크용 인덱스(예약 구현할 때 필수급)
-CREATE INDEX idx_reservation_room_time ON `reservation` (room_id, start_time, end_time);
-CREATE INDEX idx_reservation_user_time ON `reservation` (user_id, start_time, end_time);
-CREATE INDEX idx_reservation_status_time ON `reservation` (status, start_time);
+                                             `title` VARCHAR(200) NULL DEFAULT NULL COMMENT '예약 제목/목적(선택)',
+    `status` ENUM('BOOKED','CANCELED') NOT NULL DEFAULT 'BOOKED' COMMENT '예약 상태',
+
+    `start_time` DATETIME NOT NULL,
+    `end_time` DATETIME NOT NULL,
+
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`) USING BTREE,
+
+    -- ✅ 조회/충돌 체크용 인덱스(예약 구현할 때 필수급)
+    INDEX `idx_reservation_room_time` (`room_id`, `start_time`, `end_time`) USING BTREE,
+    INDEX `idx_reservation_user_time` (`user_id`, `start_time`, `end_time`) USING BTREE,
+    INDEX `idx_reservation_status_time` (`status`, `start_time`) USING BTREE,
+
+    CONSTRAINT `fk_reservation_room`
+    FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
+                                                             ON UPDATE CASCADE
+                                                             ON DELETE CASCADE,
+
+    CONSTRAINT `fk_reservation_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+                                                             ON UPDATE CASCADE
+                                                             ON DELETE NO ACTION,
+
+    CONSTRAINT `chk_reservation_time` CHECK (`start_time` < `end_time`)
+    ) ENGINE=InnoDB
+    DEFAULT CHARSET=utf8mb4
+    COLLATE=utf8mb4_unicode_ci;
 
 -- =========================
 -- 1:1 채팅(문의) - MVP
 -- =========================
-
+-- 주의:
+-- - 기존에는 utf8mb4_0900_ai_ci 였는데, DB 전체 일관성을 위해 utf8mb4_unicode_ci로 통일
 CREATE TABLE IF NOT EXISTS chat_thread (
                                            id INT AUTO_INCREMENT PRIMARY KEY,
                                            user_id INT NOT NULL,
                                            status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
     last_message_at DATETIME NULL,
+
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -216,23 +227,41 @@ CREATE TABLE IF NOT EXISTS chat_thread (
     UNIQUE KEY uq_chat_thread_user_id (user_id),
 
     INDEX idx_chat_thread_updated_at (updated_at),
-    INDEX idx_chat_thread_last_message_at (last_message_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    INDEX idx_chat_thread_last_message_at (last_message_at),
+
+    -- ✅ user 삭제 정책을 어떻게 가져갈지에 따라 CASCADE/RESTRICT 선택
+    -- 현재는 reservation이 NO ACTION이므로, 동일하게 NO ACTION 유지
+    CONSTRAINT fk_chat_thread_user
+    FOREIGN KEY (user_id) REFERENCES `user`(id)
+                                                           ON UPDATE CASCADE
+                                                           ON DELETE NO ACTION
+    ) ENGINE=InnoDB
+    DEFAULT CHARSET=utf8mb4
+    COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS chat_message (
                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                             thread_id INT NOT NULL,
+
                                             sender_role VARCHAR(10) NOT NULL,  -- 'USER' | 'ADMIN'
-    sender_id INT NULL,               -- USER면 user_id, ADMIN이면 admin user id
+    sender_id INT NULL,                -- USER면 user_id, ADMIN이면 admin user id
+
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    -- ✅ 조회 성능용
     INDEX idx_chat_message_thread_id (thread_id),
     INDEX idx_chat_message_created_at (created_at),
 
     CONSTRAINT fk_chat_message_thread
     FOREIGN KEY (thread_id) REFERENCES chat_thread(id)
     ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    ON UPDATE CASCADE
+    ) ENGINE=InnoDB
+    DEFAULT CHARSET=utf8mb4
+    COLLATE=utf8mb4_unicode_ci;
+
+-- ✅ thread_id 기준 최신 메시지 페이지네이션 최적화용(필수급)
+-- - (thread_id) 단일 인덱스가 이미 있더라도, (thread_id, id) 복합은 별도 효용이 있음
 CREATE INDEX idx_chat_message_thread_id_id
     ON chat_message(thread_id, id);
