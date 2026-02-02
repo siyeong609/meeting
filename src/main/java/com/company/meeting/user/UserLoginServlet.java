@@ -34,7 +34,7 @@ public class UserLoginServlet extends HttpServlet {
         // ✅ 이미 로그인 상태면 대시보드로 보냄(불필요한 재로그인 방지)
         HttpSession session = req.getSession(false);
         if (session != null && session.getAttribute("LOGIN_USER") != null) {
-            resp.sendRedirect(req.getContextPath() + "/user/dashboard");
+            resp.sendRedirect(req.getContextPath() + "/user/reservations");
             return;
         }
 

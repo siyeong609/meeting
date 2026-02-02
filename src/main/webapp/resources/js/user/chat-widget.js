@@ -261,12 +261,19 @@
     const row = document.createElement("div");
     row.className = "chat-msg " + (isRight ? "right" : "left");
 
-    // ✅ 왼쪽만 아바타 표시(예시는 관리자 얼굴이 있음)
+    // ✅ 왼쪽만 아바타 표시
+    // - senderId가 없으니 정책 고정:
+    //   1) /resources/uploads/profile/1.jpg 먼저 로드 시도
+    //   2) 없으면 default-profile.svg
     let avatarHtml = "";
     if (!isRight) {
-      // 관리자 아바타는 지금은 default로 통일(나중에 admin profile_image로 확장 가능)
+      const adminAvatarTry = ctx + "/resources/uploads/profile/1.jpg";
       const defaultAdminAvatar = ctx + "/resources/uploads/profile/default-profile.svg";
-      avatarHtml = "<img class='chat-avatar' src='" + defaultAdminAvatar + "' alt='admin'>";
+
+      avatarHtml =
+        "<img class='chat-avatar' " +
+        " src='" + adminAvatarTry + "' alt='admin' " +
+        " onerror=\"this.onerror=null; this.src='" + defaultAdminAvatar + "';\">" ;
     }
 
     // 구조

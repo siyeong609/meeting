@@ -380,4 +380,76 @@ public class RoomDAO {
 
         return deleted;
     }
+
+    // ✅ 사용자용: 활성 회의실만 카운트
+    public int countActiveRoomsByQuery(String q) throws SQLException {
+        String base = "SELECT COUNT(*) FROM room WHERE is_active = 1";
+        boolean hasQ = (q != null && !q.trim().isEmpty());
+
+        String sql = hasQ
+                ? base + " AND (name LIKE ? OR IFNULL(location,'') LIKE ?)"
+                : base;
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (hasQ) {
+                String like = "%" + q.trim() + "%";
+                ps.setString(1, like);
+                ps.setString(2, like);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    // ✅ 사용자용: 활성 회의실만 조회
+    public List<RoomListItem> findActiveRoomsByQuery(String q, int offset, int size) throws SQLException {
+        boolean hasQ = (q != null && !q.trim().isEmpty());
+
+        String sql = ""
+                + "SELECT id, name, location, capacity, is_active, slot_minutes, buffer_minutes, updated_at "
+                + "FROM room "
+                + "WHERE is_active = 1 "
+                + (hasQ ? "AND (name LIKE ? OR IFNULL(location,'') LIKE ?) " : "")
+                + "ORDER BY id DESC "
+                + "LIMIT ? OFFSET ?";
+
+        List<RoomListItem> list = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int idx = 1;
+            if (hasQ) {
+                String like = "%" + q.trim() + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+            }
+            ps.setInt(idx++, size);
+            ps.setInt(idx, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    RoomListItem item = new RoomListItem(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("location"),
+                            rs.getInt("capacity"),
+                            rs.getInt("is_active") == 1,
+                            rs.getInt("slot_minutes"),
+                            rs.getInt("buffer_minutes"),
+                            rs.getString("updated_at")
+                    );
+                    list.add(item);
+                }
+            }
+        }
+
+        return list;
+    }
+
 }

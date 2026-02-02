@@ -150,4 +150,19 @@ public class RoomService {
 
         return roomDAO.deleteRoomsByIds(cleaned);
     }
+
+    /**
+     * ✅ 사용자용: 활성 회의실만 카운트
+     */
+    public int countActiveRooms(String q) throws SQLException {
+        return roomDAO.countActiveRoomsByQuery(q);
+    }
+
+    /**
+     * ✅ 사용자용: 활성 회의실만 목록 조회
+     */
+    public List<RoomListItem> listActiveRooms(String q, int page, int size) throws SQLException {
+        int offset = (page - 1) * size;
+        return roomDAO.findActiveRoomsByQuery(q, offset, size);
+    }
 }

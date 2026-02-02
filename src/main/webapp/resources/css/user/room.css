@@ -1,0 +1,553 @@
+/* user/room.css
+ * - user/rooms(list) + user/rooms/detail 공용 스타일
+ * - admin 룸 목록 상단 검색바 UI 패턴을 사용자 목록에도 적용
+ */
+
+.user-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* 공통 카드 */
+.room-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+}
+
+/* ====== list.jsp 상단(관리자 스타일) ====== */
+.room-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.room-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-toolbar-left .text-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* 검색바: input + select + button */
+.room-search {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 120px 86px;
+  gap: 10px;
+  align-items: center;
+}
+
+.room-search-input {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d7dbe2;
+  border-radius: 10px;
+  outline: none;
+}
+
+.room-page-size {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d7dbe2;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+}
+
+.room-search-btn {
+  height: 40px;
+  border-radius: 10px;
+}
+
+/* 목록 카드 헤더 */
+.room-list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.room-list-head .count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 테이블 */
+.user-table-wrap {
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #eef0f4;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+}
+
+.user-table th,
+.user-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #eef0f4;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.user-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fafbfc;
+  font-weight: 800;
+  z-index: 1;
+}
+
+.user-table tbody tr:hover td {
+  background: #fbfcff;
+}
+
+.room-name {
+  font-weight: 800;
+}
+
+/* 페이징 여백 */
+#pagination {
+  margin-top: 14px;
+}
+
+/* ====== room status (list 하단 카드) ====== */
+.room-status-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.room-status-tabs {
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.tab-btn {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d7dbe2;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.tab-btn.active {
+  border-color: #333;
+}
+
+.room-status-controls {
+  margin-top: 12px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.control-group {
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.status-input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d7dbe2;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+}
+
+/* 타임테이블 */
+.timetable {
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.timetable-row {
+  display:grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0;
+  border-bottom: 1px solid #eef0f4;
+}
+
+.timetable-row:last-child {
+  border-bottom: none;
+}
+
+.timetable-time {
+  padding: 12px 14px;
+  background: #fafbfc;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.timetable-cell {
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.timetable-cell.free {
+  color: var(--text-muted);
+}
+
+.timetable-cell.busy {
+  font-weight: 900;
+}
+
+/* 달력 */
+.calendar {
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  overflow:hidden;
+}
+
+.calendar-grid {
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-head {
+  background:#fafbfc;
+  font-weight:900;
+  font-size:13px;
+  text-align:center;
+  padding:10px 0;
+  border-bottom: 1px solid #eef0f4;
+}
+
+.calendar-cell {
+  min-height: 78px;
+  border-right: 1px solid #eef0f4;
+  border-bottom: 1px solid #eef0f4;
+  padding: 10px 10px;
+  font-size: 13px;
+}
+
+.calendar-cell:nth-child(7n) {
+  border-right:none;
+}
+
+.calendar-daynum {
+  font-weight:900;
+}
+
+.calendar-badge {
+  display:inline-block;
+  margin-top:8px;
+  padding:4px 8px;
+  border-radius: 999px;
+  border: 1px solid #d7dbe2;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+/* 컨트롤 그룹: 버튼 세로 깨짐 방지 */
+.control-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap; /* ✅ 한 줄 유지 */
+}
+
+/* date/month input은 늘어나게 */
+.status-input {
+  flex: 1;
+  min-width: 180px; /* ✅ 너무 좁아지지 않게 */
+}
+
+/* 조회 버튼: 폭 확보 + 줄바꿈 금지 */
+#btnLoadDay,
+#btnLoadMonth {
+  min-width: 86px;      /* ✅ admin 검색버튼 정도 폭 */
+  white-space: nowrap;  /* ✅ '조' '회' 쪼개짐 방지 */
+  word-break: keep-all; /* ✅ 한글 줄바꿈 방지 */
+  line-height: 1;       /* ✅ 버튼 내부 정렬 안정화 */
+}
+
+
+/* ====== detail.jsp ====== */
+.room-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.room-detail-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.room-detail-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 회의실 정보 요약 */
+.room-meta-grid {
+  display: flex;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 14px;
+}
+
+.room-meta-label {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.room-meta-value {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* 운영시간(요일이 thead th) */
+.user-hours-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.user-hours-table th,
+.user-hours-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eef0f4;
+  text-align: center;
+  font-size: 13px;
+}
+
+.user-hours-table thead th {
+  background: #fafbfc;
+  font-weight: 900;
+  border-bottom: 1px solid #eef0f4;
+}
+
+.user-hours-table tbody td:first-child {
+
+}
+
+/* detail.jsp 전용 - 인라인 제거 목적 */
+
+/* 버튼 영역 정렬 */
+.room-detail-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 운영시간 카드 타이틀 */
+.room-detail-subtitle {
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+/* 카드 간격(회의실 list/detail에서도 재사용 가능) */
+.room-section-gap {
+  margin-top: 14px;
+}
+
+/* 목록 카드 타이틀(예약/회의실 공용으로 사용) */
+.room-list-title {
+  font-weight: 900;
+}
+
+/* ====== detail.jsp 섹션 간격 ====== */
+.room-detail-section {
+  margin-top: 14px;
+}
+
+/* ====== 예약 현황 헤더(탭) ====== */
+.room-status-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.room-status-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #d7dbe2;
+  background: #fff;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  border-color: #2a62ff;
+  color: #2a62ff;
+}
+
+/* ====== 예약 현황 컨트롤 ====== */
+.room-status-controls {
+  margin-top: 12px;
+}
+
+.control-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap; /* ✅ 줄바꿈 방지 */
+}
+
+.status-input {
+  flex: 1;
+  min-width: 180px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d7dbe2;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+}
+
+/* 조회 버튼 글자 깨짐 방지 */
+#btnLoadDay,
+#btnLoadMonth {
+  min-width: 86px;
+  white-space: nowrap;
+  word-break: keep-all;
+  line-height: 1;
+}
+
+/* ====== 타임테이블 ====== */
+.timeline-wrap {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eef0f4;
+  align-items: center;
+}
+
+.timeline-row:last-child {
+  border-bottom: 0;
+}
+
+.timeline-time {
+  font-weight: 900;
+  font-size: 13px;
+  color: #2b2f36;
+}
+
+.timeline-body {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  border: 1px solid #d7dbe2;
+  background: #fff;
+}
+
+.badge-free {
+  color: #1f6feb;
+  border-color: rgba(31,111,235,0.35);
+  background: rgba(31,111,235,0.08);
+}
+
+.badge-reserved {
+  color: #d1242f;
+  border-color: rgba(209,36,47,0.35);
+  background: rgba(209,36,47,0.08);
+}
+
+.timeline-title {
+  font-weight: 800;
+  font-size: 13px;
+  color: #2b2f36;
+}
+
+/* ====== 달력(일자별 예약 건수) ====== */
+.cal-weekhead {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cal-weekhead > div {
+  text-align: center;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-cell {
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  min-height: 84px;
+  padding: 10px 10px;
+  background: #fff;
+}
+
+.cal-cell.blank {
+  border: 0;
+  background: transparent;
+}
+
+.cal-day {
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.cal-count {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--text-muted);
+}
+
+.cal-count.has {
+  color: #2a62ff;
+}

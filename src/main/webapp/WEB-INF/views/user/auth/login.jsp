@@ -103,7 +103,7 @@
 
           setTimeout(function () {
             window.location.href =
-              '${pageContext.request.contextPath}/user/dashboard';
+              '${pageContext.request.contextPath}/user/reservations';
           }, 300);
 
           return;

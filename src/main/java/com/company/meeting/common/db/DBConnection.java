@@ -14,7 +14,7 @@ public class DBConnection {
 
     // Docker MySQL 접속 정보
     private static final String URL =
-            "jdbc:mysql://localhost:3306/meeting_room"
+            "jdbc:mysql://localhost:3307/meeting_room"
                     + "?useSSL=false"
                     + "&allowPublicKeyRetrieval=true"
                     + "&serverTimezone=Asia/Seoul"
