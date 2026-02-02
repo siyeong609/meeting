@@ -167,35 +167,33 @@ CREATE TABLE IF NOT EXISTS `room_operating_exceptions` (
 -- TABLE: reservation
 -- =========================================
 -- 예약 테이블(기능 구현 전이라도 스키마는 미리 확정)
-CREATE TABLE IF NOT EXISTS `reservation` (
-                                             id INT AUTO_INCREMENT PRIMARY KEY,
-
-                                             user_id INT NOT NULL,
-                                             room_id INT NOT NULL,
-
-                                             title VARCHAR(200) NULL COMMENT '예약 제목/목적(선택)',
-    status ENUM('BOOKED', 'CANCELED') NOT NULL DEFAULT 'BOOKED' COMMENT '예약 상태',
-
-    start_time DATETIME NOT NULL,
-    end_time DATETIME NOT NULL,
-
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_reservation_user
-    FOREIGN KEY (user_id) REFERENCES `user`(id)
-    ON UPDATE CASCADE,
-
-    CONSTRAINT fk_reservation_room
-    FOREIGN KEY (room_id) REFERENCES `room`(id)
-    ON UPDATE CASCADE,
-
-    -- ✅ 기본 시간 검증
-    CONSTRAINT chk_reservation_time CHECK (start_time < end_time)
-    ) ENGINE=InnoDB
-    DEFAULT CHARSET=utf8mb4
-    COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `reservation` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `room_id` INT NOT NULL,
+  `title` VARCHAR(200) NULL DEFAULT NULL COMMENT '예약 제목/목적(선택)' COLLATE 'utf8mb4_unicode_ci',
+  `status` ENUM('BOOKED','CANCELED') NOT NULL DEFAULT 'BOOKED' COMMENT '예약 상태' COLLATE 'utf8mb4_unicode_ci',
+  `start_time` DATETIME NOT NULL,
+  `end_time` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  `updated_at` DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP) ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_reservation_room_time` (`room_id`, `start_time`, `end_time`) USING BTREE,
+  INDEX `idx_reservation_user_time` (`user_id`, `start_time`, `end_time`) USING BTREE,
+  INDEX `idx_reservation_status_time` (`status`, `start_time`) USING BTREE,
+  CONSTRAINT `fk_reservation_room`
+    FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_reservation_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE NO ACTION,
+  CONSTRAINT `chk_reservation_time` CHECK ((`start_time` < `end_time`))
+)
+COLLATE='utf8mb4_unicode_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=6;
 
 -- ✅ 조회/충돌 체크용 인덱스(예약 구현할 때 필수급)
 CREATE INDEX idx_reservation_room_time ON `reservation` (room_id, start_time, end_time);
