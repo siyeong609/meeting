@@ -1,0 +1,191 @@
+/* user/profile.css
+ * - profile.jsp 전용 스타일
+ * - user/layout.css + common.css 위에 덮어쓰는 목적
+ * - room-card 톤 유지하면서 "좌 320px / 우 유동" 2컬럼 정렬
+ */
+
+/* ====== 카드 내부 레이아웃 ====== */
+.profile-card {
+  /* room-card 기반 + 약간의 상단 여백 */
+  margin-top: 14px;
+}
+
+/* 상단 헤더(타이틀 + 버튼) */
+.profile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eef0f4;
+  margin-bottom: 18px;
+}
+
+.profile-head-left {
+  min-width: 0; /* 긴 텍스트 줄바꿈 안정 */
+}
+
+.profile-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.profile-head-left .text-muted {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.profile-head-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 저장/취소 버튼 크기(너무 커지지 않게) */
+.profile-head-right .btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+/* ====== 본문 2컬럼 ====== */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr; /* 좌 고정, 우 유동 */
+  gap: 22px;
+  align-items: start;
+}
+
+/* 좌측 섹션 */
+.profile-left {
+  border-right: 1px solid #eef0f4;
+  padding-right: 18px;
+}
+
+/* 우측 섹션 */
+.profile-right {
+  min-width: 0;
+}
+
+/* 섹션 타이틀 */
+.profile-section-title {
+  font-weight: 900;
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+/* 간격 유틸 */
+.mt-18 {
+  margin-top: 18px;
+}
+
+/* ====== 프로필 이미지(아바타) ====== */
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #dfe3ea;
+  background: #fff;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ====== 폼 ====== */
+.profile-form-group {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.profile-label {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* input 공통 */
+.profile-input {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d7dbe2;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+}
+
+.profile-input:read-only {
+  background: #f7f8fa;
+  color: #333;
+}
+
+.profile-help {
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* 파일 input은 기본 UI가 커서 흔들림이 있어 "박스형"으로 정렬 */
+.profile-file {
+  height: 40px;
+  padding: 6px 10px;
+  border: 1px solid #d7dbe2;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* 현재 프로필(다운로드/삭제) 라인 */
+.profile-current-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.profile-current-row a {
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.profile-delete {
+  font-size: 13px;
+  user-select: none;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+/* ====== 반응형(모바일/좁은 화면) ====== */
+@media (max-width: 920px) {
+  .profile-grid {
+    grid-template-columns: 1fr; /* 스택 */
+  }
+
+  .profile-left {
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eef0f4;
+  }
+
+  .profile-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-head-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

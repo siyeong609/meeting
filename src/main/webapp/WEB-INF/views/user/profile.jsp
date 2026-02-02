@@ -4,7 +4,9 @@
 <%@ page import="java.lang.reflect.Method" %>
 
 <%!
-  // ✅ HTML Escape (JSTL 없이 안전하게 렌더링)
+  /**
+   * ✅ HTML Escape (JSTL 없이 안전하게 렌더링)
+   */
   private String esc(String s) {
     if (s == null) return "";
     return s.replace("&", "&amp;")
@@ -14,6 +16,9 @@
             .replace("'", "&#39;");
   }
 
+  /**
+   * ✅ DTO getter 명이 케이스별로 다를 수 있어 reflection으로 흡수
+   */
   private String tryGetString(Object obj, String methodName) {
     if (obj == null) return null;
     try {
@@ -25,6 +30,9 @@
     }
   }
 
+  /**
+   * ✅ 여러 후보 중 가장 먼저 유효한 문자열을 선택
+   */
   private String firstNonEmpty(String... arr) {
     if (arr == null) return null;
     for (String s : arr) {
@@ -35,10 +43,18 @@
 %>
 
 <%
-  // ✅ JSP 내장 session 사용
-  UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
+  // =========================================================
+  // ✅ header.jsp 확장 포인트
+  // =========================================================
+  request.setAttribute("pageTitle", "내정보수정");
+  request.setAttribute("pageCss", "profile.css"); // /resources/css/user/profile.css
 
   String ctx = request.getContextPath();
+
+  // ✅ 세션 유저
+  UserDTO loginUser = (UserDTO) session.getAttribute("LOGIN_USER");
+
+  // 기본 프로필 이미지
   String defaultDb = "/resources/uploads/profile/default-profile.svg";
   String defaultUrl = ctx + defaultDb;
 
@@ -63,117 +79,132 @@
           tryGetString(loginUser, "getProfile_image")
   );
 
-  boolean hasCustomProfile = (profileDb != null && !profileDb.isEmpty());
-  String profileUrl = hasCustomProfile ? (profileDb.startsWith("http") ? profileDb : (ctx + (profileDb.startsWith("/") ? profileDb : ("/" + profileDb)))) : defaultUrl;
+  boolean hasCustomProfile = (profileDb != null && !profileDb.trim().isEmpty());
 
+  // ✅ profileDb가 http(s)면 그대로, 아니면 ctx 붙임
+  String profileUrl = defaultUrl;
+  if (hasCustomProfile) {
+    String p = profileDb.trim();
+    if (p.startsWith("http://") || p.startsWith("https://")) {
+      profileUrl = p;
+    } else {
+      if (!p.startsWith("/")) p = "/" + p;
+      profileUrl = ctx + p;
+    }
+  }
+
+  // 다운로드 표기용 파일명
   String fileName = "";
   if (hasCustomProfile) {
-    int idx = profileDb.lastIndexOf("/");
-    fileName = (idx >= 0) ? profileDb.substring(idx + 1) : profileDb;
+    String p = profileDb.trim();
+    int idx = p.lastIndexOf("/");
+    fileName = (idx >= 0) ? p.substring(idx + 1) : p;
   }
 %>
 
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>내정보수정 - 회의실 예약</title>
-
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/user/layout.css">
-</head>
-<body>
-
-<script>
-  // ✅ admin/member/list.js 패턴과 동일하게 ctx 제공
-  window.__MEETING__ = window.__MEETING__ || {};
-  window.__MEETING__.ctx = "<%= ctx %>";
-</script>
-
 <jsp:include page="/WEB-INF/views/user/layout/header.jsp" />
 
-<nav class="user-nav">
-  <ul>
-    <li><a href="${pageContext.request.contextPath}/user/dashboard">대시보드</a></li>
-    <li><a href="${pageContext.request.contextPath}/user/rooms">회의실</a></li>
-    <li><a href="${pageContext.request.contextPath}/user/reservations">내 예약</a></li>
-  </ul>
-</nav>
-
 <main class="user-container">
-  <h2 class="section-title">내정보수정</h2>
 
-  <div class="card" style="padding:16px;">
-    <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+  <!-- ✅ room-card 스타일 재사용 -->
+  <section class="room-card profile-card">
+    <div class="profile-head">
+      <div class="profile-head-left">
+        <h2 class="profile-title">내정보수정</h2>
+        <div class="text-muted">프로필 이미지 / 이메일 / 비밀번호를 변경할 수 있습니다.</div>
+      </div>
 
-      <!-- 프로필 영역 -->
-      <div style="min-width:220px;">
-        <div style="font-weight:700; margin-bottom:10px;">프로필 이미지</div>
+      <div class="profile-head-right">
+        <button type="button" class="btn btn-primary" id="btnSave">저장</button>
+        <a href="<%= ctx %>/user/reservations" class="btn btn-secondary">취소</a>
+      </div>
+    </div>
 
-        <div style="width:120px; height:120px; border-radius:999px; overflow:hidden; border:1px solid var(--border); background:#fff;">
+    <div class="profile-grid">
+
+      <!-- =========================
+           좌측: 프로필 이미지
+           ========================= -->
+      <div class="profile-left">
+        <div class="profile-section-title">프로필 이미지</div>
+
+        <div class="profile-avatar">
           <img id="profilePreview"
                src="<%= profileUrl %>"
                alt="profile"
-               style="width:100%; height:100%; object-fit:cover;"
                onerror="this.onerror=null; this.src='<%= defaultUrl %>';">
         </div>
 
-        <div class="form-group" style="margin-top:12px; display: grid;">
-          <label>이미지 업로드</label>
-          <input type="file" id="profileFile" accept="image/jpeg,image/jpg,image/png" style="padding:8px;">
-          <small class="text-muted">JPG, PNG만 가능 (최대 5MB)</small>
+        <div class="profile-form-group">
+          <label class="profile-label" for="profileFile">이미지 업로드</label>
+          <input type="file"
+                 id="profileFile"
+                 accept="image/jpeg,image/jpg,image/png"
+                 class="profile-file">
+          <div class="text-muted profile-help">JPG, PNG만 가능 (최대 5MB)</div>
 
-          <!-- 커스텀 프로필일 때만 다운로드/삭제 표시 -->
-          <div id="currentProfileRow"
-               style="margin-top:8px; display:<%= (hasCustomProfile ? "flex" : "none") %>; align-items:center; gap:10px; flex-wrap:wrap;">
-            <a id="currentProfileDownload" href="<%= (hasCustomProfile ? (ctx + profileDb) : "#") %>" download><%= esc(fileName) %></a>
+          <!-- ✅ 커스텀 프로필일 때만 다운로드/삭제 표시 -->
+          <div id="currentProfileRow" class="profile-current-row <%= (hasCustomProfile ? "" : "is-hidden") %>">
+            <a id="currentProfileDownload"
+               href="<%= (hasCustomProfile ? profileUrl : "#") %>"
+               download><%= esc(fileName) %></a>
 
-            <label style="user-select:none;">
-              <input type="checkbox" id="deleteProfile"> 삭제
+            <label class="profile-delete">
+              <input type="checkbox" id="deleteProfile">
+              삭제
             </label>
           </div>
         </div>
       </div>
 
-      <!-- 기본 정보 -->
-      <div style="flex:1; min-width:260px;">
-        <div style="font-weight:700; margin-bottom:10px;">기본 정보</div>
+      <!-- =========================
+           우측: 기본 정보 + 비번 변경
+           ========================= -->
+      <div class="profile-right">
+        <div class="profile-section-title">기본 정보</div>
 
-        <div class="form-group">
-          <label>아이디</label>
-          <input type="text" value="<%= esc(loginId) %>" readonly>
+        <div class="profile-form-group">
+          <label class="profile-label">아이디</label>
+          <input type="text" value="<%= esc(loginId) %>" readonly class="profile-input">
         </div>
 
-        <div class="form-group">
-          <label>이름</label>
-          <input type="text" value="<%= esc(name) %>" readonly>
+        <div class="profile-form-group">
+          <label class="profile-label">이름</label>
+          <input type="text" value="<%= esc(name) %>" readonly class="profile-input">
         </div>
 
-        <div class="form-group">
-          <label>이메일</label>
-          <input type="email" id="email" value="<%= esc(email) %>" placeholder="이메일 (선택)">
+        <div class="profile-form-group">
+          <label class="profile-label" for="email">이메일</label>
+          <input type="email"
+                 id="email"
+                 value="<%= esc(email) %>"
+                 placeholder="이메일 (선택)"
+                 class="profile-input">
         </div>
 
-        <div style="font-weight:700; margin:18px 0 10px;">비밀번호 변경</div>
-        <div class="form-group">
-          <label>새 비밀번호</label>
-          <input type="password" id="newPassword" placeholder="변경 시에만 입력">
-        </div>
+        <div class="profile-section-title mt-18">비밀번호 변경</div>
 
-        <div style="display:flex; gap:10px; margin-top:16px;">
-          <button type="button" class="btn btn-primary" id="btnSave">저장</button>
-          <a href="${pageContext.request.contextPath}/user/dashboard" class="btn btn-secondary">취소</a>
+        <div class="profile-form-group">
+          <label class="profile-label" for="newPassword">새 비밀번호</label>
+          <input type="password"
+                 id="newPassword"
+                 placeholder="변경 시에만 입력"
+                 class="profile-input">
         </div>
       </div>
 
     </div>
-  </div>
+  </section>
+
 </main>
 
+<!-- ✅ profile.js가 ctx를 읽기 전에 먼저 주입 -->
+<script>
+  window.__MEETING__ = window.__MEETING__ || {};
+  window.__MEETING__.ctx = "<%= ctx %>";
+</script>
+
+<!-- ✅ footer.jsp가 common.js 로드는 그대로 둬도 됨(DOMContentLoaded 시점엔 common.js 로드 완료) -->
+<script src="<%= ctx %>/resources/js/user/profile.js"></script>
+
 <jsp:include page="/WEB-INF/views/user/layout/footer.jsp" />
-
-<script src="${pageContext.request.contextPath}/resources/js/common.js"></script>
-<script src="${pageContext.request.contextPath}/resources/js/user/profile.js"></script>
-
-</body>
-</html>
