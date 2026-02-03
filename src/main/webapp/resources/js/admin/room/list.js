@@ -2,6 +2,10 @@
  * admin/room/list.js
  * - 회의실관리 목록/검색/페이징 + 관리(수정/상세) + 생성/수정 모달
  *
+ * ✅ 버튼 의미 분리(중요)
+ * - 수정: 회의실 정보를 수정하는 기능(모달)
+ * - 상세: 회의실 예약 현황(detail 페이지) 보기(페이지 이동)
+ *
  * ✅ 서버 파라미터 규약(중요)
  * - isActive: "1"이면 active=true
  * - 운영시간: dow1~dow7 고정 파라미터로 받음
@@ -18,10 +22,15 @@
   const ctx = (window.__MEETING__ && window.__MEETING__.ctx) ? window.__MEETING__.ctx : "";
 
   const API_LIST   = ctx + "/admin/rooms";
-  const API_DETAIL = ctx + "/admin/rooms/detail"; // ✅ 추가: 운영시간 포함 상세
+  const API_DETAIL = ctx + "/admin/rooms/detail"; // ✅ 운영시간 포함 상세(수정 모달용)
   const API_CREATE = ctx + "/admin/rooms/create";
   const API_UPDATE = ctx + "/admin/rooms/update";
   const API_DELETE = ctx + "/admin/rooms/delete";
+
+  // ✅ "상세(예약현황)"은 페이지 이동이 맞음 (달력/필터 확장 쉬움)
+  // - 너 요구대로 reservations가 아니라 detail로 이동
+  // - 쿼리 파라미터는 id로 통일
+  const PAGE_DETAIL = ctx + "/admin/detail"; // 예: /admin/detail?id=123
 
   const DEFAULTS = {
     slotMinutes: 60,
@@ -34,7 +43,6 @@
   /**
    * ✅ 요일 라벨 매핑
    * - 현재는 1=월, 7=일 가정
-   * - 만약 DB가 1=일, 7=토 규약이면 아래 "일요일 시작" 블록으로 교체
    */
   const DOWS = [
     { dow: 1, label: "월" },
@@ -45,19 +53,6 @@
     { dow: 6, label: "토" },
     { dow: 7, label: "일" }
   ];
-
-  /**
-  // ✅ 일요일 시작(예: MySQL DAYOFWEEK 기반)일 경우 이걸로 교체
-  const DOWS = [
-    { dow: 1, label: "일" },
-    { dow: 2, label: "월" },
-    { dow: 3, label: "화" },
-    { dow: 4, label: "수" },
-    { dow: 5, label: "목" },
-    { dow: 6, label: "금" },
-    { dow: 7, label: "토" }
-  ];
-  */
 
   const state = { page: 1, size: 10, q: "" };
   let allRooms = [];
@@ -212,6 +207,7 @@
         + "</tr>";
     }).join("");
 
+    // ✅ 수정(회의실 정보 수정 모달)
     tbody.querySelectorAll("[data-edit-id]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-edit-id");
@@ -219,8 +215,12 @@
       });
     });
 
+    // ✅ 상세(예약 현황) - 페이지 이동
     tbody.querySelectorAll("[data-detail-id]").forEach((btn) => {
-      btn.addEventListener("click", () => openRoomReservations(btn.getAttribute("data-detail-id")));
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-detail-id");
+        openRoomReservationsPage(id);
+      });
     });
 
     document.querySelectorAll(".room-chk").forEach((chk) => {
@@ -268,19 +268,18 @@
   }
 
   // =========================================================
-  // 상세(예약 현황) - 다음 단계
+  // ✅ 상세(예약 현황) - 페이지 이동
   // =========================================================
-  function openRoomReservations(roomId) {
-    const r = allRooms.find(x => String(x.id) === String(roomId));
-    const title = r ? (r.name + " 예약 현황") : ("회의실(" + roomId + ") 예약 현황");
+  function openRoomReservationsPage(roomId) {
+    const id = String(roomId || "").trim();
+    if (!id) {
+      showModal("회의실 ID가 올바르지 않습니다.", "warning");
+      return;
+    }
 
-    showModal(
-      "<div><strong>" + escapeHtml(title) + "</strong></div>"
-      + "<div class='text-muted' style='margin-top:8px;'>"
-      + "다음 단계: roomId로 예약 목록 조회 API를 연결하면 됩니다."
-      + "</div>",
-      "info"
-    );
+    // ✅ /admin/detail?id=123
+    const url = PAGE_DETAIL + "?id=" + encodeURIComponent(id);
+    window.location.href = url;
   }
 
   // =========================================================
@@ -303,8 +302,7 @@
   }
 
   /**
-   * ✅ 핵심 수정: 수정 모달 열 때 DB 운영시간을 포함한 "상세"를 먼저 받아온다.
-   * - 목록 API에는 operatingHours가 없어서 기본값으로 보이던 문제 해결
+   * ✅ 수정 모달 열 때 DB 운영시간 포함 상세를 먼저 받아온다.
    */
   async function openRoomEditModal(roomId) {
     const id = parseInt(String(roomId || "0"), 10);
@@ -314,7 +312,7 @@
     }
 
     try {
-      const detail = await fetchRoomDetail(id); // ✅ 운영시간 포함
+      const detail = await fetchRoomDetail(id);
       const room = convertDetailToModalRoom(detail);
       openRoomModal({ mode: "edit", room });
 
@@ -323,11 +321,6 @@
     }
   }
 
-  /**
-   * /admin/rooms/detail
-   * - 응답은 { ok:true, data: RoomDetail } 형태로 가정
-   * - RoomDetail 안에 operatingHours(List<RoomOperatingHour>) 포함
-   */
   async function fetchRoomDetail(id) {
     const body = new URLSearchParams({ id: String(id) });
 
@@ -348,21 +341,16 @@
     return json.data;
   }
 
-  /**
-   * RoomDetail(JSON)를 모달에서 쓰는 형태로 변환
-   * - closed=true(휴무) → enabled=false
-   * - open/close 필드는 프로젝트마다 이름이 다를 수 있어서 최대한 흡수
-   */
   function convertDetailToModalRoom(detail) {
     const room = {
       id: detail.id ?? 0,
       name: detail.name || "",
       location: detail.location || "",
       capacity: (detail.capacity != null) ? detail.capacity : 1,
-      isActive: (detail.active === true), // 서버에서 active로 내려오면 이걸 사용
+      isActive: (detail.active === true),
       slotMinutes: (detail.slotMinutes != null) ? detail.slotMinutes : DEFAULTS.slotMinutes,
       bufferMinutes: (detail.bufferMinutes != null) ? detail.bufferMinutes : DEFAULTS.bufferMinutes,
-      operatingHours: buildDefaultOperatingHoursByDow() // 기본틀 먼저 만들고, 아래에서 덮어씀
+      operatingHours: buildDefaultOperatingHoursByDow()
     };
 
     const list = Array.isArray(detail.operatingHours) ? detail.operatingHours : [];
@@ -373,13 +361,8 @@
     return room;
   }
 
-  /**
-   * List<RoomOperatingHour> → { "1": {enabled,open,close}, ... } 형태로 변환
-   */
   function operatingHoursListToMap(list) {
     const map = {};
-
-    // 일단 전부 휴무로 초기화(누락 대비)
     for (let dow = 1; dow <= 7; dow++) {
       map[String(dow)] = { enabled: false, open: "", close: "" };
     }
@@ -390,7 +373,6 @@
 
       const closed = (it.closed === true) || (it.isClosed === true);
 
-      // 필드명 흔들림 흡수
       const open = String(it.open ?? it.openTime ?? it.openAt ?? "").trim();
       const close = String(it.close ?? it.closeTime ?? it.closeAt ?? "").trim();
 
@@ -652,16 +634,10 @@
     return params;
   }
 
-  /**
-   * time 문자열을 "HH:mm"로 정규화한다.
-   * - "9:00" -> "09:00"
-   * - "09:00:00" -> "09:00"
-   */
   function normalizeTimeHHMM(t) {
     const s = String(t || "").trim();
     if (!s) return "";
 
-    // HH:mm:ss → HH:mm 로 잘라냄
     const parts = s.split(":");
     if (parts.length < 2) return s;
 
@@ -676,11 +652,6 @@
     return `${hh}:${mm}`;
   }
 
-  /**
-   * "HH:mm" 또는 "H:mm"을 분(minute)으로 변환
-   * - 반환: 0~1439
-   * - 파싱 실패: null
-   */
   function parseTimeToMinutes(t) {
     const s = String(t || "").trim();
     const m = s.match(/^(\d{1,2}):(\d{2})$/);

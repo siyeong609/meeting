@@ -4,6 +4,8 @@ import com.company.meeting.reservation.dao.ReservationDAO;
 import com.company.meeting.reservation.dto.ReservationListItem;
 import com.company.meeting.reservation.dto.ReservationRoomPolicy;
 import com.company.meeting.reservation.dto.RoomDayOperating;
+import com.company.meeting.reservation.dto.RoomReservationItem;
+import com.company.meeting.reservation.dto.RoomReservationDayCount;
 
 import java.sql.SQLException;
 import java.time.*;
@@ -23,6 +25,58 @@ public class ReservationService {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final ReservationDAO reservationDAO = new ReservationDAO();
+
+    /**
+     * ✅ 관리자/사용자 공용(회의실 기준): 특정 일자 예약 목록
+     * - DAO에 이미 구현된 findRoomReservationsForDate를 그대로 사용
+     */
+    public List<RoomReservationItem> listRoomReservationsForDate(int roomId, LocalDate date) throws SQLException {
+        if (roomId <= 0) throw new IllegalArgumentException("회의실 ID가 올바르지 않습니다.");
+        if (date == null) throw new IllegalArgumentException("date가 올바르지 않습니다.");
+        return reservationDAO.findRoomReservationsForDate(roomId, date);
+    }
+
+    /**
+     * ✅ 관리자/사용자 공용(회의실 기준): 월 단위 날짜별 예약 건수
+     * - DAO에 이미 구현된 countRoomReservationsByMonth를 그대로 사용
+     */
+    public List<RoomReservationDayCount> countRoomReservationsByMonth(int roomId, YearMonth ym) throws SQLException {
+        if (roomId <= 0) throw new IllegalArgumentException("회의실 ID가 올바르지 않습니다.");
+        if (ym == null) throw new IllegalArgumentException("ym이 올바르지 않습니다.");
+        return reservationDAO.countRoomReservationsByMonth(roomId, ym);
+    }
+
+    // =========================================================
+    // ✅ (추가) 관리자/회의실 상세: 회의실 예약 목록(페이징)
+    // - ReservationListItem 재사용
+    // - q는 제목/회의실명 기준 필터(DAO와 동일)
+    // =========================================================
+    public Map<String, Object> listRoomReservations(int roomId, String q, int page, int size) throws SQLException {
+        if (roomId <= 0) throw new IllegalArgumentException("roomId가 올바르지 않습니다.");
+
+        if (page < 1) page = 1;
+        if (size < 1) size = 10;
+
+        int total = reservationDAO.countRoomReservations(roomId, q);
+        int totalPages = (int) Math.ceil(total / (double) size);
+        int offset = (page - 1) * size;
+
+        List<ReservationListItem> items = reservationDAO.findRoomReservations(roomId, q, offset, size);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("items", items);
+
+        Map<String, Object> pageMeta = new HashMap<>();
+        pageMeta.put("page", page);
+        pageMeta.put("size", size);
+        pageMeta.put("total", total);
+        pageMeta.put("totalPages", Math.max(totalPages, 1));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("data", data);
+        result.put("page", pageMeta);
+        return result;
+    }
 
     public Map<String, Object> listMyReservations(int userId, String q, int page, int size) throws SQLException {
         if (page < 1) page = 1;

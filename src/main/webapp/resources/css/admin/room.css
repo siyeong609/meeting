@@ -2,17 +2,21 @@
  * room.css
  * - 회의실관리 페이지 전용
  * - member.css와 동일한 UI 톤/구조 유지
+ *
+ * ✅ 포함 범위
+ * - admin/rooms (목록)
+ * - admin/detail (예약 상세/현황 페이지)
  */
 
-/* 검색 영역 */
+/* =========================================
+ * 목록: 검색 영역
+ * ========================================= */
 .room-search {
   display: flex;
   gap: 12px;
   align-items: center;
   width: 100%;
-
-  /* ✅ PC에서는 한 줄 유지 */
-  flex-wrap: nowrap;
+  flex-wrap: nowrap; /* ✅ PC에서는 한 줄 유지 */
 }
 
 .room-search .room-search-input {
@@ -70,7 +74,9 @@
   justify-content: flex-end;
 }
 
-/* 페이징 */
+/* =========================================
+ * 목록: 페이징
+ * ========================================= */
 .pagination {
   display: flex;
   gap: 6px;
@@ -105,7 +111,9 @@
   color: #666;
 }
 
-/* ===== 상세 팝업(기존 코드 호환) ===== */
+/* =========================================
+ * 모달: 상세 팝업(기존 코드 호환)
+ * ========================================= */
 .modal-detail .modal-body {
   padding: 16px;
 }
@@ -219,6 +227,290 @@
 }
 
 /* =========================================================
+ * ✅ Admin Detail 페이지 (예약 상세/현황)
+ * - /admin/detail?id=123
+ * - user/room.css의 detail UI 패턴을 admin 톤에 맞춰 이식
+ * ========================================================= */
+
+/* ✅ 카드 컨테이너(관리자 기본 레이아웃이 카드가 없다면 이걸 사용) */
+.room-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+}
+
+/* 카드 간격 */
+.room-detail-section {
+  margin-top: 14px;
+}
+
+/* 상단 헤더(제목 + 액션 버튼) */
+.room-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.room-detail-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.room-detail-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 소제목(카드 내부 타이틀) */
+.room-detail-subtitle {
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+/* 소제목에서 margin을 없애야 할 때(탭 헤더에 붙을 때) */
+.room-detail-subtitle.no-margin {
+  margin: 0;
+}
+
+/* 회의실 정보 요약(라벨/값) */
+.room-meta-grid {
+  display: flex;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+.room-meta-label {
+  color: #6b7280; /* var(--text-muted) 없을 때도 안전 */
+  font-size: 13px;
+}
+
+.room-meta-value {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* 운영시간 테이블(요일이 thead th) */
+.admin-hours-wrap {
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #eef0f4;
+}
+
+.admin-hours-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+}
+
+.admin-hours-table th,
+.admin-hours-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eef0f4;
+  text-align: center;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.admin-hours-table thead th {
+  background: #fafbfc;
+  font-weight: 900;
+  border-bottom: 1px solid #eef0f4;
+}
+
+/* ====== 예약 현황 헤더(탭) ====== */
+.room-status-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.room-status-tabs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tab-btn {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d7dbe2;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.tab-btn.active {
+  border-color: #333;
+}
+
+/* ====== 예약 현황 컨트롤 ====== */
+.room-status-controls {
+  margin-top: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 컨트롤 그룹: 버튼 글자/줄바꿈 안정화 */
+.control-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap; /* ✅ 한 줄 유지 */
+}
+
+.status-input {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d7dbe2;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  flex: 1;
+  min-width: 180px;
+}
+
+/* 조회 버튼 글자 깨짐 방지 */
+#btnLoadDay,
+#btnLoadMonth {
+  min-width: 86px;
+  white-space: nowrap;
+  word-break: keep-all;
+  line-height: 1;
+}
+
+/* ====== 타임테이블(일자 탭) ====== */
+.timetable {
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.timetable-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0;
+  border-bottom: 1px solid #eef0f4;
+}
+
+.timetable-row:last-child {
+  border-bottom: none;
+}
+
+.timetable-time {
+  padding: 12px 14px;
+  background: #fafbfc;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.timetable-cell {
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.timetable-cell.free {
+  color: #6b7280;
+}
+
+.timetable-cell.busy {
+  font-weight: 900;
+}
+
+/* ====== 달력(월 탭) ====== */
+.cal-weekhead {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cal-weekhead > div {
+  text-align: center;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-cell {
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  min-height: 84px;
+  padding: 10px 10px;
+  background: #fff;
+}
+
+.cal-cell.blank {
+  border: 0;
+  background: transparent;
+}
+
+.cal-day {
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.cal-count {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #6b7280;
+}
+
+.cal-count.has {
+  color: #2a62ff;
+}
+
+.user-table-wrap {
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #eef0f4;
+}
+
+.user-hours-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+}
+
+.user-hours-table th,
+.user-hours-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eef0f4;
+  text-align: center;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.user-hours-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fafbfc;
+  font-weight: 900;
+  z-index: 1;
+}
+
+/* =========================================================
  * ✅ 반응형 (모바일)
  * ========================================================= */
 @media (max-width: 520px) {
@@ -257,5 +549,19 @@
   .room-image-preview {
     width: 140px;
     height: 110px;
+  }
+
+  /* ✅ detail 페이지 카드 헤더도 모바일에서 줄바꿈 */
+  .room-detail-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .room-detail-actions {
+    justify-content: flex-end;
+  }
+
+  .room-meta-grid {
+    grid-template-columns: 110px 1fr;
   }
 }

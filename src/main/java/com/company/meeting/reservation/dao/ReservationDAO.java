@@ -30,6 +30,272 @@ public class ReservationDAO {
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
+    // =========================================================
+    // ✅ (추가) 관리자 수정/취소용 단건 조회 DTO (내부용)
+    // =========================================================
+    public static class ReservationRow {
+        private int id;
+        private int userId;
+        private int roomId;
+        private String status;
+        private String title;
+        private LocalDateTime start;
+        private LocalDateTime end;
+
+        public int getId() { return id; }
+        public int getUserId() { return userId; }
+        public int getRoomId() { return roomId; }
+        public String getStatus() { return status; }
+        public String getTitle() { return title; }
+        public LocalDateTime getStart() { return start; }
+        public LocalDateTime getEnd() { return end; }
+    }
+
+    /**
+     * ✅ (추가) 예약 단건 조회 (관리자 update/cancel 검증용)
+     */
+    public ReservationRow findReservationRowById(int reservationId) throws SQLException {
+        String sql = ""
+                + "SELECT id, user_id, room_id, status, title, start_time, end_time "
+                + "FROM reservation "
+                + "WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, reservationId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+
+                ReservationRow row = new ReservationRow();
+                row.id = rs.getInt("id");
+                row.userId = rs.getInt("user_id");
+                row.roomId = rs.getInt("room_id");
+                row.status = rs.getString("status");
+                row.title = rs.getString("title");
+
+                Timestamp st = rs.getTimestamp("start_time");
+                Timestamp et = rs.getTimestamp("end_time");
+                row.start = (st == null) ? null : st.toLocalDateTime();
+                row.end = (et == null) ? null : et.toLocalDateTime();
+
+                return row;
+            }
+        }
+    }
+
+    /**
+     * ✅ (추가) 관리자 예약 취소
+     * - 본인 조건 없음
+     * - BOOKED만 CANCELED로 변경
+     */
+    public boolean cancelReservationByAdmin(int reservationId) throws SQLException {
+        String sql = ""
+                + "UPDATE reservation "
+                + "SET status='CANCELED' "
+                + "WHERE id=? AND status='BOOKED'";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, reservationId);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    /**
+     * ✅ (추가) 예약 수정(충돌 체크 포함, 자기 자신 제외)
+     * - 트랜잭션 + FOR UPDATE 잠금으로 동시성 방지
+     * - status=BOOKED인 예약만 수정 가능
+     */
+    public boolean updateReservationWithConflictCheck(
+            int reservationId,
+            int roomId,
+            String title,
+            LocalDateTime start,
+            LocalDateTime end,
+            int bufferMinutes
+    ) throws SQLException {
+
+        final int buf = Math.max(0, bufferMinutes);
+        final LocalDateTime startNorm = normalizeToMinute(start);
+        final LocalDateTime endNorm = normalizeToMinute(end);
+
+        if (startNorm == null || endNorm == null) {
+            throw new SQLException("예약 시간이 올바르지 않습니다.");
+        }
+        if (!endNorm.isAfter(startNorm)) {
+            throw new SQLException("종료시간은 시작시간보다 커야 합니다.");
+        }
+
+        final LocalDateTime startWithBuffer = startNorm.minusMinutes(buf);
+        final LocalDateTime endWithBuffer = endNorm.plusMinutes(buf);
+
+        // ✅ 자기 자신(id<>?) 제외
+        final String sqlLock = ""
+                + "SELECT id, start_time, end_time "
+                + "FROM reservation "
+                + "WHERE room_id = ? AND status = 'BOOKED' "
+                + "  AND id <> ? "
+                + "  AND start_time < ? "
+                + "  AND end_time > ? "
+                + "ORDER BY start_time ASC "
+                + "LIMIT 1 FOR UPDATE";
+
+        final String sqlUpdate = ""
+                + "UPDATE reservation "
+                + "SET title=?, start_time=?, end_time=? "
+                + "WHERE id=? AND room_id=? AND status='BOOKED'";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try {
+                // 1) 충돌 체크(+잠금)
+                try (PreparedStatement ps = conn.prepareStatement(sqlLock)) {
+                    ps.setInt(1, roomId);
+                    ps.setInt(2, reservationId);
+                    ps.setTimestamp(3, Timestamp.valueOf(endWithBuffer));
+                    ps.setTimestamp(4, Timestamp.valueOf(startWithBuffer));
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            int conflictId = rs.getInt("id");
+                            Timestamp cst = rs.getTimestamp("start_time");
+                            Timestamp cet = rs.getTimestamp("end_time");
+
+                            throw new SQLException("이미 해당 시간에 예약이 존재합니다. (conflictId="
+                                    + conflictId + ", " + cst + " ~ " + cet + ")");
+                        }
+                    }
+                }
+
+                // 2) update
+                int updated;
+                try (PreparedStatement ps = conn.prepareStatement(sqlUpdate)) {
+                    ps.setString(1, (title == null) ? null : title.trim());
+                    ps.setTimestamp(2, Timestamp.valueOf(startNorm));
+                    ps.setTimestamp(3, Timestamp.valueOf(endNorm));
+                    ps.setInt(4, reservationId);
+                    ps.setInt(5, roomId);
+
+                    updated = ps.executeUpdate();
+                }
+
+                conn.commit();
+                return updated == 1;
+
+            } catch (Exception ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    private LocalDateTime normalizeToMinute(LocalDateTime dt) {
+        if (dt == null) return null;
+        return dt.truncatedTo(java.time.temporal.ChronoUnit.MINUTES);
+    }
+
+    // =========================================================
+    // ✅ (추가) 관리자/회의실 상세: roomId 기준 예약 목록 카운트
+    // - ReservationListItem 재사용(룸 이름/위치 포함)
+    // - q는 제목/회의실명 기준으로 필터(필요 시 추후 확장)
+    // =========================================================
+    public int countRoomReservations(int roomId, String q) throws SQLException {
+        boolean hasQ = (q != null && !q.trim().isEmpty());
+
+        String sql = ""
+                + "SELECT COUNT(*) "
+                + "FROM reservation r "
+                + "JOIN room rm ON rm.id = r.room_id "
+                + "WHERE r.room_id = ? "
+                + (hasQ ? "AND (IFNULL(r.title,'') LIKE ? OR rm.name LIKE ?) " : "");
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int idx = 1;
+            ps.setInt(idx++, roomId);
+
+            if (hasQ) {
+                String like = "%" + q.trim() + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx, like);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    // =========================================================
+    // ✅ (추가) 관리자/회의실 상세: roomId 기준 예약 목록 조회
+    // - ReservationListItem 재사용
+    // - status: BOOKED/CANCELED 모두 포함(원하면 where로 BOOKED만 제한 가능)
+    // =========================================================
+    public List<ReservationListItem> findRoomReservations(int roomId, String q, int offset, int size) throws SQLException {
+        boolean hasQ = (q != null && !q.trim().isEmpty());
+
+        String sql = ""
+                + "SELECT r.id, r.room_id, rm.name AS room_name, rm.location AS room_location, "
+                + "       r.title, r.status, r.start_time, r.end_time, r.created_at "
+                + "FROM reservation r "
+                + "JOIN room rm ON rm.id = r.room_id "
+                + "WHERE r.room_id = ? "
+                + (hasQ ? "AND (IFNULL(r.title,'') LIKE ? OR rm.name LIKE ?) " : "")
+                + "ORDER BY r.start_time DESC "
+                + "LIMIT ? OFFSET ?";
+
+        List<ReservationListItem> list = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int idx = 1;
+            ps.setInt(idx++, roomId);
+
+            if (hasQ) {
+                String like = "%" + q.trim() + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+            }
+
+            ps.setInt(idx++, size);
+            ps.setInt(idx, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ReservationListItem it = new ReservationListItem();
+                    it.setId(rs.getInt("id"));
+                    it.setRoomId(rs.getInt("room_id"));
+                    it.setRoomName(rs.getString("room_name"));
+                    it.setRoomLocation(rs.getString("room_location"));
+
+                    it.setTitle(rs.getString("title"));
+                    it.setStatus(rs.getString("status"));
+
+                    Timestamp st = rs.getTimestamp("start_time");
+                    Timestamp et = rs.getTimestamp("end_time");
+                    Timestamp ct = rs.getTimestamp("created_at");
+
+                    it.setStartTime(st == null ? "" : st.toLocalDateTime().format(DT_FMT));
+                    it.setEndTime(et == null ? "" : et.toLocalDateTime().format(DT_FMT));
+                    it.setCreatedAt(ct == null ? "" : ct.toLocalDateTime().format(DT_FMT));
+
+                    list.add(it);
+                }
+            }
+        }
+
+        return list;
+    }
+
     public int countMyReservations(int userId, String q) throws SQLException {
         boolean hasQ = (q != null && !q.trim().isEmpty());
 
@@ -308,10 +574,7 @@ public class ReservationDAO {
         }
     }
 
-    private LocalDateTime normalizeToMinute(LocalDateTime dt) {
-        if (dt == null) return null;
-        return dt.truncatedTo(java.time.temporal.ChronoUnit.MINUTES);
-    }
+
 
     /**
      * ✅ (추가) 특정 회의실의 특정 일자 예약 목록(BOOKED)

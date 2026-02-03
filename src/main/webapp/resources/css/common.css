@@ -420,3 +420,50 @@ tr:hover td {
   margin-top: 4px;
   font-size: 12px;
 }
+
+/* 관리자 오버레이 모달 (detail.js openOverlay) */
+#adminOverlay .m-overlay{
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#adminOverlay .m-dialog{
+  width: 560px;
+  max-width: calc(100vw - 24px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+
+#adminOverlay .m-form{
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px 12px;
+  align-items: center;
+}
+
+#adminOverlay .m-form label{
+  font-size: 13px;
+  color: #444;
+}
+
+#adminOverlay .m-form input,
+#adminOverlay .m-form select{
+  height: 38px;
+  border: 1px solid #d7dbe3;
+  border-radius: 10px;
+  padding: 0 12px;
+}
+
+#adminOverlay .m-actions{
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
