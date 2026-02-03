@@ -202,7 +202,7 @@ CREATE TABLE IF NOT EXISTS `reservation` (
     CONSTRAINT `fk_reservation_user`
     FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
                                                              ON UPDATE CASCADE
-                                                             ON DELETE NO ACTION,
+                                                             ON DELETE CASCADE,
 
     CONSTRAINT `chk_reservation_time` CHECK (`start_time` < `end_time`)
     ) ENGINE=InnoDB
@@ -234,7 +234,7 @@ CREATE TABLE IF NOT EXISTS chat_thread (
     CONSTRAINT fk_chat_thread_user
     FOREIGN KEY (user_id) REFERENCES `user`(id)
                                                            ON UPDATE CASCADE
-                                                           ON DELETE NO ACTION
+                                                           ON DELETE CASCADE
     ) ENGINE=InnoDB
     DEFAULT CHARSET=utf8mb4
     COLLATE=utf8mb4_unicode_ci;
